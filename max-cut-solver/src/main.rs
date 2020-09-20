@@ -1,3 +1,4 @@
+use std::env;
 use std::fs;
 
 struct Graph {
@@ -54,7 +55,7 @@ fn load_data() {
 }
 
 fn main() {
-    let problem = "../../data/G1";
-    let graph = load_problem(problem);
+    let args: Vec<String> = env::args().collect();
+    let graph = load_problem(&args[1].to_string());
     println!("{}", graph.n);
 }
