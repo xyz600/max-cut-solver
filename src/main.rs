@@ -167,7 +167,7 @@ fn main() {
     // x_i \in {-1, 1}
 
     let timeout = 5000; // [ms]
-    let best_energy, best_solution = simulated_annealing(&graph, timeout);
+    let (best_energy, best_solution) = simulated_annealing(&graph, timeout);
 
     println!("energy = {}", best_energy);
     // println!("solution = {:?}", best_solution);
