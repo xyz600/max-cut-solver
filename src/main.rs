@@ -110,16 +110,8 @@ fn accept(energy_diff: i64, progress: f64, rng: &mut ThreadRng) -> bool {
     }
 }
 
-fn main() {
+fn simulated_annealing(graph: &Graph, timeout: u128) -> (i64, Vec<i64>) {
     let start_time = Instant::now();
-    let timeout = 5000; // [ms]
-
-    let args: Vec<String> = env::args().collect();
-    let graph = load_problem(&args[1].to_string());
-
-    // max-cut
-    // \sum_ij G_ij (1 - x_i x_j)
-    // x_i \in {-1, 1}
 
     // initial solution
     let mut solution = vec![0i64; graph.n];
@@ -163,6 +155,20 @@ fn main() {
         }
     }
     println!("{}", counter);
+    (best_energy, best_solution)
+}
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    let graph = load_problem(&args[1].to_string());
+
+    // max-cut
+    // \sum_ij G_ij (1 - x_i x_j)
+    // x_i \in {-1, 1}
+
+    let timeout = 5000; // [ms]
+    let best_energy, best_solution = simulated_annealing(&graph, timeout);
+
     println!("energy = {}", best_energy);
     // println!("solution = {:?}", best_solution);
 
