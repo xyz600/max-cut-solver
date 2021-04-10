@@ -196,7 +196,7 @@ fn main() {
 
                 let (best_energy, best_solution) =
                     simulated_annealing(&graph, instance.timeout as u128);
-
+                println!("instance name: {}", instance.name);
                 println!("energy = {}", best_energy);
                 // println!("solution = {:?}", best_solution);
                 let last_energy = calculate_energy(&graph, &best_solution);
