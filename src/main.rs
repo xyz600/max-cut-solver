@@ -1,6 +1,10 @@
+extern crate rand;
+extern crate rustc_serialize;
+
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::ThreadRng;
 use rand::Rng;
+use rustc_serialize::json;
 use std::env;
 use std::fs;
 use std::time::Instant;
@@ -158,20 +162,49 @@ fn simulated_annealing(graph: &Graph, timeout: u128) -> (i64, Vec<i64>) {
     (best_energy, best_solution)
 }
 
-fn main() {
-    let args: Vec<String> = env::args().collect();
-    let graph = load_problem(&args[1].to_string());
+#[derive(Debug, RustcDecodable)]
+struct InstanceSettings {
+    name: String,
+    timeout: u64,
+}
 
+#[derive(Debug, RustcDecodable)]
+struct ExperimentalSettings {
+    rootpath: String,
+    instance_list: Vec<InstanceSettings>,
+}
+
+fn main() {
     // max-cut
     // \sum_ij G_ij (1 - x_i x_j)
     // x_i \in {-1, 1}
 
-    let timeout = 5000; // [ms]
-    let (best_energy, best_solution) = simulated_annealing(&graph, timeout);
+    let args: Vec<String> = env::args().collect();
+    let config_path = &args[1];
 
-    println!("energy = {}", best_energy);
-    // println!("solution = {:?}", best_solution);
+    let maybe_settings =
+        json::decode::<ExperimentalSettings>(fs::read_to_string(config_path).unwrap().as_str());
 
-    let last_energy = calculate_energy(&graph, &best_solution);
-    println!("energy = {}", last_energy);
+    match maybe_settings {
+        Ok(settings) => {
+            let rootpath = &settings.rootpath;
+            let instance_list = &settings.instance_list;
+
+            for instance in instance_list {
+                let datapath = rootpath.clone() + instance.name.as_str();
+                let graph = load_problem(datapath.as_str());
+
+                let (best_energy, best_solution) =
+                    simulated_annealing(&graph, instance.timeout as u128);
+
+                println!("energy = {}", best_energy);
+                // println!("solution = {:?}", best_solution);
+                let last_energy = calculate_energy(&graph, &best_solution);
+                println!("energy for check = {}", last_energy);
+            }
+        }
+        Err(error) => {
+            println!("{}", error);
+        }
+    }
 }

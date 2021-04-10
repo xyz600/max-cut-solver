@@ -1,100 +1,129 @@
 {
     "rootpath": "../data/",
-    "data": [
+    "instance_list": [
         {
-            "G1": {
-                "timeout": 10
-            },
-            "G22": {
-                "timeout": 10
-            },
-            "G43": {
-                "timeout": 10
-            },
-            "G55": {
-                "timeout": 10
-            },
-            "G60": {
-                "timeout": 10
-            },
-            "G6": {
-                "timeout": 10
-            },
-            "G27": {
-                "timeout": 10
-            },
-            "G56": {
-                "timeout": 10
-            },
-            "G61": {
-                "timeout": 10
-            },
-            "G14": {
-                "timeout": 10
-            },
-            "G35": {
-                "timeout": 10
-            },
-            "G51": {
-                "timeout": 10
-            },
-            "G58": {
-                "timeout": 10
-            },
-            "G63": {
-                "timeout": 10
-            },
-            "G18": {
-                "timeout": 10
-            },
-            "G39": {
-                "timeout": 10
-            },
-            "G59": {
-                "timeout": 10
-            },
-            "G64": {
-                "timeout": 10
-            },
-            "G11": {
-                "timeout": 10
-            },
-            "G12": {
-                "timeout": 10
-            },
-            "G13": {
-                "timeout": 10
-            },
-            "G32": {
-                "timeout": 10
-            },
-            "G33": {
-                "timeout": 10
-            },
-            "G34": {
-                "timeout": 10
-            },
-            "G57": {
-                "timeout": 10
-            },
-            "G65": {
-                "timeout": 10
-            },
-            "G66": {
-                "timeout": 10
-            },
-            "G67": {
-                "timeout": 10
-            },
-            "G72": {
-                "timeout": 10
-            },
-            "G77": {
-                "timeout": 10
-            },
-            "G81": {
-                "timeout": 10
-            }
+            "name": "G1",
+            "timeout": 10000
+        },
+        {
+            "name": "G22",
+            "timeout": 10000
+        },
+        {
+            "name": "G43",
+            "timeout": 10000
+        },
+        {
+            "name": "G55",
+            "timeout": 10000
+        },
+        {
+            "name": "G60",
+            "timeout": 10000
+        },
+        {
+            "name": "G6",
+            "timeout": 10000
+        },
+        {
+            "name": "G27",
+            "timeout": 10000
+        },
+        {
+            "name": "G56",
+            "timeout": 10000
+        },
+        {
+            "name": "G61",
+            "timeout": 10000
+        },
+        {
+            "name": "G14",
+            "timeout": 10000
+        },
+        {
+            "name": "G35",
+            "timeout": 10000
+        },
+        {
+            "name": "G51",
+            "timeout": 10000
+        },
+        {
+            "name": "G58",
+            "timeout": 10000
+        },
+        {
+            "name": "G63",
+            "timeout": 10000
+        },
+        {
+            "name": "G18",
+            "timeout": 10000
+        },
+        {
+            "name": "G39",
+            "timeout": 10000
+        },
+        {
+            "name": "G59",
+            "timeout": 10000
+        },
+        {
+            "name": "G64",
+            "timeout": 10000
+        },
+        {
+            "name": "G11",
+            "timeout": 10000
+        },
+        {
+            "name": "G12",
+            "timeout": 10000
+        },
+        {
+            "name": "G13",
+            "timeout": 10000
+        },
+        {
+            "name": "G32",
+            "timeout": 10000
+        },
+        {
+            "name": "G33",
+            "timeout": 10000
+        },
+        {
+            "name": "G34",
+            "timeout": 10000
+        },
+        {
+            "name": "G57",
+            "timeout": 10000
+        },
+        {
+            "name": "G65",
+            "timeout": 10000
+        },
+        {
+            "name": "G66",
+            "timeout": 10000
+        },
+        {
+            "name": "G67",
+            "timeout": 10000
+        },
+        {
+            "name": "G72",
+            "timeout": 10000
+        },
+        {
+            "name": "G77",
+            "timeout": 10000
+        },
+        {
+            "name": "G81",
+            "timeout": 10000
         }
     ]
 }
