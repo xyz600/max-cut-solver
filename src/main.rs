@@ -222,6 +222,68 @@ struct ExperimentalSettings {
     instance_list: Vec<InstanceSettings>,
 }
 
+const INVALIDE_VALUE: usize = usize::MAX;
+
+struct IntSet {
+    data: Vec<usize>,
+    index_of: Vec<usize>,
+    size: usize,
+}
+
+impl IntSet {
+    fn new(n: usize) -> IntSet {
+        let mut ret = IntSet {
+            data: vec![0; n],
+            index_of: vec![0; n],
+            size: n,
+        };
+        for i in 0..n {
+            ret.data[i] = i;
+            ret.index_of[i] = i;
+        }
+        ret
+    }
+
+    fn select(&self, rng: &mut ThreadRng) -> Option<usize> {
+        if self.size > 0 {
+            let uniform = Uniform::from(0..self.size);
+            let pos = rng.sample(uniform);
+            Some(self.data[pos])
+        } else {
+            None
+        }
+    }
+
+    fn erase(&mut self, target: usize) {
+        assert!(self.index_of[target] != INVALIDE_VALUE);
+        let target_index = self.index_of[target];
+        let last_index = self.size - 1;
+        if target_index != last_index {
+            // 消去対象の要素の場所に最終要素を上書き
+            let last_value = self.data[last_index];
+            self.data[target_index] = self.data[last_index];
+            self.data[last_index] = INVALIDE_VALUE;
+            self.index_of[target] = INVALIDE_VALUE;
+            self.index_of[last_value] = target_index;
+        }
+        self.size -= 1;
+    }
+
+    fn len(&self) -> usize {
+        self.size
+    }
+}
+
+#[test]
+fn test_intset() {
+    let size = 128;
+    let mut intset = IntSet::new(size);
+    assert_eq!(intset.len(), size);
+    intset.erase(10);
+    assert_eq!(intset.index_of[10], INVALIDE_VALUE);
+    assert_eq!(intset.len(), size - 1);
+}
+
 fn main() {
     // max-cut
     // \sum_ij G_ij (1 - x_i x_j)
