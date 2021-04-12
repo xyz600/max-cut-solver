@@ -116,14 +116,8 @@ fn accept(energy_diff: i64, progress: f64, rng: &mut ThreadRng) -> bool {
     }
 }
 
-fn simulated_annealing(graph: &Graph, timeout: u128) -> (i64, Vec<i64>) {
+fn simulated_annealing(graph: &Graph, solution: &mut Vec<i64>, timeout: u128) -> (i64, Vec<i64>) {
     let start_time = Instant::now();
-
-    // initial solution
-    let mut solution = vec![0i64; graph.n];
-    for i in 0..graph.n {
-        solution[i] = if i % 2 == 0 { 1 } else { -1 };
-    }
 
     let mut energy = calculate_energy(&graph, &solution);
 
@@ -297,13 +291,7 @@ fn test_intset() {
     assert_eq!(intset.len(), size);
 }
 
-fn fast_swap_greedy(graph: &Graph, _timeout: u128) -> (i64, Vec<i64>) {
-    // initial solution
-    let mut solution = vec![0i64; graph.n];
-    for i in 0..graph.n {
-        solution[i] = if i % 2 == 0 { 1 } else { -1 };
-    }
-
+fn fast_swap_greedy(graph: &Graph, solution: &mut Vec<i64>, _timeout: u128) -> (i64, Vec<i64>) {
     let mut rng = rand::thread_rng();
     let mut candidate = IntSet::new(graph.n);
     while let Some(v) = candidate.select(&mut rng) {
@@ -318,7 +306,7 @@ fn fast_swap_greedy(graph: &Graph, _timeout: u128) -> (i64, Vec<i64>) {
         }
     }
     let energy = calculate_energy(&graph, &solution);
-    (energy, solution)
+    (energy, solution.clone()) // FIXME: remove clone(because argument solution should be moved)
 }
 
 fn main() {
@@ -343,10 +331,16 @@ fn main() {
                 let datapath = rootpath.clone() + instance.name.as_str();
                 let graph = load_problem(datapath.as_str());
 
+                // initial solution
+                let mut initial_solution = vec![0i64; graph.n];
+                for i in 0..graph.n {
+                    initial_solution[i] = if i % 2 == 0 { 1 } else { -1 };
+                }
+
                 // let (best_energy, best_solution) =
-                //     simulated_annealing(&graph, instance.timeout as u128);
+                //     simulated_annealing(&graph, &mut initial_solution, instance.timeout as u128);
                 let (best_energy, best_solution) =
-                    fast_swap_greedy(&graph, instance.timeout as u128);
+                    fast_swap_greedy(&graph, &mut initial_solution, instance.timeout as u128);
                 println!("instance name: {}", instance.name);
                 println!("energy = {}", best_energy);
                 // println!("solution = {:?}", best_solution);
