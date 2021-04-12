@@ -254,6 +254,14 @@ impl IntSet {
         }
     }
 
+    fn push(&mut self, id: usize) {
+        if self.index_of[id] == INVALIDE_VALUE {
+            self.data[self.size] = id;
+            self.index_of[id] = self.size;
+            self.size += 1;
+        }
+    }
+
     fn erase(&mut self, target: usize) {
         assert!(self.index_of[target] != INVALIDE_VALUE);
         let target_index = self.index_of[target];
@@ -282,6 +290,11 @@ fn test_intset() {
     intset.erase(10);
     assert_eq!(intset.index_of[10], INVALIDE_VALUE);
     assert_eq!(intset.len(), size - 1);
+
+    intset.push(1);
+    assert_eq!(intset.len(), size - 1);
+    intset.push(10);
+    assert_eq!(intset.len(), size);
 }
 
 fn main() {
