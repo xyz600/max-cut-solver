@@ -297,6 +297,30 @@ fn test_intset() {
     assert_eq!(intset.len(), size);
 }
 
+fn fast_swap_greedy(graph: &Graph, _timeout: u128) -> (i64, Vec<i64>) {
+    // initial solution
+    let mut solution = vec![0i64; graph.n];
+    for i in 0..graph.n {
+        solution[i] = if i % 2 == 0 { 1 } else { -1 };
+    }
+
+    let mut rng = rand::thread_rng();
+    let mut candidate = IntSet::new(graph.n);
+    while let Some(v) = candidate.select(&mut rng) {
+        let energy_diff = calculate_energy_diff(&graph, &solution, v);
+        if energy_diff > 0 {
+            solution[v] *= -1;
+            for neighbor in &graph.edges[v] {
+                candidate.push(neighbor.0);
+            }
+        } else {
+            candidate.erase(v);
+        }
+    }
+    let energy = calculate_energy(&graph, &solution);
+    (energy, solution)
+}
+
 fn main() {
     // max-cut
     // \sum_ij G_ij (1 - x_i x_j)
@@ -319,8 +343,10 @@ fn main() {
                 let datapath = rootpath.clone() + instance.name.as_str();
                 let graph = load_problem(datapath.as_str());
 
+                // let (best_energy, best_solution) =
+                //     simulated_annealing(&graph, instance.timeout as u128);
                 let (best_energy, best_solution) =
-                    simulated_annealing(&graph, instance.timeout as u128);
+                    fast_swap_greedy(&graph, instance.timeout as u128);
                 println!("instance name: {}", instance.name);
                 println!("energy = {}", best_energy);
                 // println!("solution = {:?}", best_solution);
