@@ -1,7 +1,7 @@
 extern crate rand;
 extern crate rustc_serialize;
 
-use max_cut_solver::solver::{calculate_energy, fast_swap_greedy, load_problem};
+use max_cut_solver::solver::{calculate_energy, fast_swap_greedy, Graph};
 use rustc_serialize::json;
 use std::env;
 use std::fs;
@@ -86,7 +86,7 @@ fn main() {
 
             for instance in instance_list {
                 let datapath = rootpath.clone() + instance.name.as_str();
-                let graph = load_problem(datapath.as_str());
+                let graph = Graph::load_problem(datapath.as_str());
 
                 // initial solution
                 let mut initial_solution = vec![0i64; graph.n];
