@@ -1,5 +1,5 @@
 [package]
-name = "max-cut-solver"
+name = "max_cut_solver"
 version = "0.1.0"
 authors = ["xyz600 <xyz600600@gmail.com>"]
 edition = "2018"
