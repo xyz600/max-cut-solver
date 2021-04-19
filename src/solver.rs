@@ -292,7 +292,10 @@ pub fn dijkstra_like_flip(
     let mut best_local_energy_list = local_energy_list.clone();
     let mut energy = best_energy;
 
+    let mut counter = 0;
+
     loop {
+        counter += 1;
         let selected = uniform.sample(&mut rng);
         let mut used = vec![false; graph.n];
 
@@ -340,6 +343,8 @@ pub fn dijkstra_like_flip(
             break;
         }
     }
+
+    println!("counter = {}", counter);
 
     (best_energy, best_solution)
 }
