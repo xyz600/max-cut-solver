@@ -2,6 +2,7 @@ extern crate rand;
 extern crate rustc_serialize;
 
 use max_cut_solver::solver::{calculate_energy, fast_swap_greedy, Graph};
+use rayon::prelude::*;
 use rustc_serialize::json;
 use std::env;
 use std::fs;
@@ -89,19 +90,27 @@ fn main() {
             let rootpath = &settings.rootpath;
             let instance_list = &settings.instance_list;
 
-            for instance in instance_list {
-                let datapath = rootpath.clone() + instance.name.as_str();
-                let graph = Graph::load_problem(datapath.as_str());
+            let result_iter = instance_list
+                .into_par_iter()
+                .map(|instance| {
+                    let datapath = rootpath.clone() + instance.name.as_str();
+                    let graph = Graph::load_problem(datapath.as_str());
 
-                // let (best_energy, best_solution) =
-                //     simulated_annealing(&graph, instance.timeout as u128);
-                let (best_energy, best_solution) =
-                    fast_swap_greedy(&graph, instance.timeout as u128);
-                println!("instance name: {}", instance.name);
+                    // let (best_energy, best_solution) =
+                    //     simulated_annealing(&graph, instance.timeout as u128);
+                    let (best_energy, best_solution) =
+                        fast_swap_greedy(&graph, instance.timeout as u128);
+                    let last_energy = calculate_energy(&graph, &best_solution);
+                    assert_eq!(best_energy, last_energy);
+
+                    (instance, best_energy)
+                })
+                .collect::<Vec<(&InstanceSettings, i64)>>();
+
+            for (instance, best_energy) in result_iter {
+                println!("instance name: {}", instance.name.clone());
                 println!("energy = {}", best_energy);
                 // println!("solution = {:?}", best_solution);
-                let last_energy = calculate_energy(&graph, &best_solution);
-                println!("energy for check = {}", last_energy);
                 writer.append_row();
                 let last = writer.table.last_mut().unwrap();
                 last[0] = instance.name.clone();
@@ -109,6 +118,7 @@ fn main() {
                 last[2] = best_energy.to_string();
                 last[3] = instance.knownbest.to_string();
             }
+
             writer.save("result.md");
         }
         Err(error) => {
