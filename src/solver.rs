@@ -1,6 +1,7 @@
 use rand::distributions::{Distribution, Uniform};
 use rand::rngs::ThreadRng;
 use rand::Rng;
+use std::collections::BinaryHeap;
 use std::fs;
 use std::time::Instant;
 
@@ -84,7 +85,7 @@ fn energy_diff_test() {
     let mut rng = rand::thread_rng();
     let uniform_rand = Uniform::from(0..graph.n);
 
-    for _ in 0..10000 {
+    for _ in 0..1000 {
         let pos = uniform_rand.sample(&mut rng);
         let energy_before = calculate_energy(&graph, &solution);
         let energy_diff = calculate_energy_diff(&graph, &solution, pos);
@@ -92,6 +93,15 @@ fn energy_diff_test() {
         let energy_after = calculate_energy(&graph, &solution);
         assert_eq!(energy_before + energy_diff, energy_after);
     }
+}
+
+fn randomize(graph: &Graph) -> Vec<i64> {
+    // initial solution
+    let mut initial_solution = vec![0i64; graph.n];
+    for i in 0..graph.n {
+        initial_solution[i] = if i % 2 == 0 { 1 } else { -1 };
+    }
+    initial_solution
 }
 
 fn accept(energy_diff: i64, progress: f64, rng: &mut ThreadRng) -> bool {
@@ -103,11 +113,8 @@ fn accept(energy_diff: i64, progress: f64, rng: &mut ThreadRng) -> bool {
     }
 }
 
-pub fn simulated_annealing(
-    graph: &Graph,
-    solution: &mut Vec<i64>,
-    timeout: u128,
-) -> (i64, Vec<i64>) {
+pub fn simulated_annealing(graph: &Graph, timeout: u128) -> (i64, Vec<i64>) {
+    let mut solution = randomize(&graph);
     let start_time = Instant::now();
 
     let mut energy = calculate_energy(&graph, &solution);
@@ -224,21 +231,129 @@ fn test_intset() {
     assert_eq!(intset.len(), size);
 }
 
-pub fn fast_swap_greedy(graph: &Graph, solution: &mut Vec<i64>, timeout: u128) -> (i64, Vec<i64>) {
-    let start_time = Instant::now();
-    let mut rng = rand::thread_rng();
-    let mut candidate = IntSet::new(graph.n);
+fn flip_solution(
+    graph: &Graph,
+    local_energy_list: &mut Vec<i64>,
+    solution: &mut Vec<i64>,
+    pos: usize,
+) {
+    local_energy_list[pos] *= -1;
+    solution[pos] *= -1;
+    for &(j, weight) in &graph.edges[pos] {
+        local_energy_list[j] += 2 * weight * solution[pos] * solution[j];
+    }
+}
+
+fn calculate_local_energy(graph: &Graph, solution: &Vec<i64>, pos: usize) -> i64 {
+    graph.edges[pos]
+        .iter()
+        .map(|&(j, weight)| solution[pos] * solution[j] * weight)
+        .sum()
+}
+
+#[test]
+fn test_local_energy() {
+    let data = "data/G1";
+    let graph = Graph::load_problem(data);
+
+    let mut solution = vec![1i64; graph.n];
+
+    // local_energy_list[i] := bit i をフリップさせた時の変化量の2倍
+    let mut local_energy_list = (0..graph.n)
+        .map(|i| calculate_local_energy(&graph, &solution, i))
+        .collect::<Vec<i64>>();
 
     let mut energy = calculate_energy(&graph, &solution);
-    let mut best_energy = energy;
+
+    for i in 0..graph.n {
+        energy += local_energy_list[i];
+        flip_solution(&graph, &mut local_energy_list, &mut solution, i);
+        assert_eq!(energy, calculate_energy(&graph, &solution));
+    }
+}
+
+pub fn dijkstra_like_flip(
+    graph: &Graph,
+    solution: &mut Vec<i64>,
+    timeout: u128,
+) -> (i64, Vec<i64>) {
+    let start_time = Instant::now();
+    let mut rng = rand::thread_rng();
+
+    let uniform = Uniform::from(0..graph.n);
+
+    // local_energy_list[i] := bit i をフリップさせた時の変化量の2倍
+    let mut local_energy_list = (0..graph.n)
+        .map(|i| calculate_local_energy(&graph, &solution, i))
+        .collect::<Vec<i64>>();
+
+    let mut best_energy = calculate_energy(&graph, &solution);
     let mut best_solution = solution.clone();
-
-    let mut count = 0;
-
-    let uniform_rand = Uniform::from(0..graph.n);
+    let mut best_local_energy_list = local_energy_list.clone();
+    let mut energy = best_energy;
 
     loop {
-        count += 1;
+        let selected = uniform.sample(&mut rng);
+        let mut used = vec![false; graph.n];
+
+        // 最終状態で元に戻るため、最初は flip
+        energy += local_energy_list[selected];
+        flip_solution(&graph, &mut local_energy_list, solution, selected);
+
+        // dijkstra-like neighbor
+        let mut que = BinaryHeap::new();
+        que.push((local_energy_list[selected], selected));
+
+        while let Some((local_energy, v)) = que.pop() {
+            // 最新版の local_energy でないと意味がないので捨てる
+            if used[v] || local_energy != local_energy_list[v] {
+                continue;
+            }
+
+            used[v] = true;
+            energy += local_energy_list[v];
+            flip_solution(&graph, &mut local_energy_list, solution, v);
+            assert_eq!(energy, calculate_energy(&graph, &solution));
+
+            if best_energy < energy {
+                // println!("improve energy: {} -> {}", best_energy, energy);
+                best_energy = energy;
+                best_solution.copy_from_slice(&solution[0..]);
+                best_local_energy_list.copy_from_slice(&local_energy_list[0..]);
+            }
+
+            // 周辺の push
+            for &(nv, _) in &graph.edges[v] {
+                if !used[nv] {
+                    que.push((local_energy_list[nv], nv));
+                }
+            }
+        }
+
+        if energy < best_energy {
+            energy = best_energy;
+            solution.copy_from_slice(&best_solution[0..]);
+            local_energy_list.copy_from_slice(&best_local_energy_list[0..]);
+        }
+        let elapsed = start_time.elapsed().as_millis();
+        if elapsed > timeout {
+            break;
+        }
+    }
+
+    (best_energy, best_solution)
+}
+
+pub fn fast_swap_greedy(graph: &Graph, timeout: u128) -> (i64, Vec<i64>) {
+    let start_time = Instant::now();
+    let mut rng = rand::thread_rng();
+    let mut solution = randomize(&graph);
+
+    let mut energy = calculate_energy(&graph, &solution);
+
+    loop {
+        let prev_energy = energy;
+        let mut candidate = IntSet::new(graph.n);
 
         // local search
         while let Some(v) = candidate.select(&mut rng) {
@@ -254,26 +369,11 @@ pub fn fast_swap_greedy(graph: &Graph, solution: &mut Vec<i64>, timeout: u128) -
             }
         }
 
-        if best_energy < energy {
-            println!("update best energy: {} -> {}", best_energy, energy);
-            best_energy = energy;
-            best_solution.copy_from_slice(&solution[0..]);
-        }
-
         let end = start_time.elapsed().as_millis();
-        if end > timeout {
+        if end > timeout || prev_energy == energy {
             break;
         }
-
-        let selected_kick_node = uniform_rand.sample(&mut rng);
-        solution[selected_kick_node] *= -1;
-        candidate.push(selected_kick_node);
-        for &(v, _) in &graph.edges[selected_kick_node] {
-            candidate.push(v);
-        }
-        energy = calculate_energy(&graph, &solution);
     }
-    println!("counter = {}", count);
 
-    (best_energy, best_solution)
+    dijkstra_like_flip(&graph, &mut solution, timeout)
 }

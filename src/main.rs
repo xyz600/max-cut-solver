@@ -88,16 +88,10 @@ fn main() {
                 let datapath = rootpath.clone() + instance.name.as_str();
                 let graph = Graph::load_problem(datapath.as_str());
 
-                // initial solution
-                let mut initial_solution = vec![0i64; graph.n];
-                for i in 0..graph.n {
-                    initial_solution[i] = if i % 2 == 0 { 1 } else { -1 };
-                }
-
                 // let (best_energy, best_solution) =
-                //     simulated_annealing(&graph, &mut initial_solution, instance.timeout as u128);
+                //     simulated_annealing(&graph, instance.timeout as u128);
                 let (best_energy, best_solution) =
-                    fast_swap_greedy(&graph, &mut initial_solution, instance.timeout as u128);
+                    fast_swap_greedy(&graph, instance.timeout as u128);
                 println!("instance name: {}", instance.name);
                 println!("energy = {}", best_energy);
                 // println!("solution = {:?}", best_solution);
