@@ -113,7 +113,7 @@ fn accept(energy_diff: i64, progress: f64, rng: &mut ThreadRng) -> bool {
     }
 }
 
-pub fn simulated_annealing(graph: &Graph, timeout: u128) -> (i64, Vec<i64>) {
+pub fn simulated_annealing(graph: &Graph, timeout: u64) -> (i64, Vec<i64>) {
     let mut solution = randomize(&graph);
     let start_time = Instant::now();
 
@@ -145,7 +145,7 @@ pub fn simulated_annealing(graph: &Graph, timeout: u128) -> (i64, Vec<i64>) {
 
         counter += 1;
         if counter % check_frequency == 0 {
-            let end = start_time.elapsed().as_millis();
+            let end = start_time.elapsed().as_secs();
             if end > timeout {
                 break;
             }
@@ -272,11 +272,9 @@ fn test_local_energy() {
     }
 }
 
-pub fn dijkstra_like_flip(
-    graph: &Graph,
-    solution: &mut Vec<i64>,
-    timeout: u128,
-) -> (i64, Vec<i64>) {
+const MAX_CHAIN_LENGTH: usize = 100;
+
+pub fn dijkstra_like_flip(graph: &Graph, solution: &mut Vec<i64>, timeout: u64) -> (i64, Vec<i64>) {
     let start_time = Instant::now();
     let mut rng = rand::thread_rng();
 
@@ -304,6 +302,8 @@ pub fn dijkstra_like_flip(
         let mut que = BinaryHeap::new();
         que.push((local_energy_list[selected], selected));
 
+        let mut counter = 0;
+
         while let Some((local_energy, v)) = que.pop() {
             // 最新版の local_energy でないと意味がないので捨てる
             if used[v] || local_energy != local_energy_list[v] {
@@ -322,6 +322,11 @@ pub fn dijkstra_like_flip(
                 best_local_energy_list.copy_from_slice(&local_energy_list[0..]);
             }
 
+            counter += 1;
+            if counter == MAX_CHAIN_LENGTH {
+                break;
+            }
+
             // 周辺の push
             for &(nv, _) in &graph.edges[v] {
                 if !used[nv] {
@@ -330,12 +335,11 @@ pub fn dijkstra_like_flip(
             }
         }
 
-        if energy < best_energy {
-            energy = best_energy;
-            solution.copy_from_slice(&best_solution[0..]);
-            local_energy_list.copy_from_slice(&best_local_energy_list[0..]);
-        }
-        let elapsed = start_time.elapsed().as_millis();
+        energy = best_energy;
+        solution.copy_from_slice(&best_solution[0..]);
+        local_energy_list.copy_from_slice(&best_local_energy_list[0..]);
+
+        let elapsed = start_time.elapsed().as_secs();
         if elapsed > timeout {
             break;
         }
@@ -344,7 +348,7 @@ pub fn dijkstra_like_flip(
     (best_energy, best_solution)
 }
 
-pub fn fast_swap_greedy(graph: &Graph, timeout: u128) -> (i64, Vec<i64>) {
+pub fn fast_swap_greedy(graph: &Graph, timeout: u64) -> (i64, Vec<i64>) {
     let start_time = Instant::now();
     let mut rng = rand::thread_rng();
     let mut solution = randomize(&graph);
@@ -369,7 +373,7 @@ pub fn fast_swap_greedy(graph: &Graph, timeout: u128) -> (i64, Vec<i64>) {
             }
         }
 
-        let end = start_time.elapsed().as_millis();
+        let end = start_time.elapsed().as_secs();
         if end > timeout || prev_energy == energy {
             break;
         }

@@ -80,7 +80,7 @@ fn main() {
         json::decode::<ExperimentalSettings>(fs::read_to_string(config_path).unwrap().as_str());
 
     let mut writer = TableWriter::new(vec![
-        "timeout[ms]".to_string(),
+        "timeout[s]".to_string(),
         "score".to_string(),
         "known best".to_string(),
     ]);
@@ -98,8 +98,7 @@ fn main() {
 
                     // let (best_energy, best_solution) =
                     //     simulated_annealing(&graph, instance.timeout as u128);
-                    let (best_energy, best_solution) =
-                        fast_swap_greedy(&graph, instance.timeout as u128);
+                    let (best_energy, best_solution) = fast_swap_greedy(&graph, instance.timeout);
                     let last_energy = calculate_energy(&graph, &best_solution);
                     assert_eq!(best_energy, last_energy);
 
