@@ -101,6 +101,8 @@ fn main() {
                     let (best_energy, best_solution) = fast_swap_greedy(&graph, instance.timeout);
                     let last_energy = calculate_energy(&graph, &best_solution);
                     assert_eq!(best_energy, last_energy);
+                    println!("instance name: {}", instance.name.clone());
+                    println!("energy = {}", best_energy);
 
                     (instance, best_energy)
                 })
