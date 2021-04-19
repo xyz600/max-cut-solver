@@ -3,127 +3,163 @@
     "instance_list": [
         {
             "name": "G1",
-            "timeout": 10000
+            "timeout": 80,
+            "knownbest": 11624
         },
         {
             "name": "G22",
-            "timeout": 10000
+            "timeout": 200,
+            "knownbest": 13359
         },
         {
             "name": "G43",
-            "timeout": 10000
+            "timeout": 100,
+            "knownbest": 6660
         },
         {
             "name": "G55",
-            "timeout": 10000
+            "timeout": 500,
+            "knownbest": 10299
         },
         {
             "name": "G60",
-            "timeout": 10000
+            "timeout": 700,
+            "knownbest": 14186
         },
         {
             "name": "G6",
-            "timeout": 10000
+            "timeout": 80,
+            "knownbest": 2178
         },
         {
             "name": "G27",
-            "timeout": 10000
+            "timeout": 200,
+            "knownbest": 3341
         },
         {
             "name": "G56",
-            "timeout": 10000
+            "timeout": 500,
+            "knownbest": 4016
         },
         {
             "name": "G61",
-            "timeout": 10000
+            "timeout": 700,
+            "knownbest": 5789
         },
         {
             "name": "G14",
-            "timeout": 10000
+            "timeout": 80,
+            "knownbest": 3064
         },
         {
             "name": "G35",
-            "timeout": 10000
+            "timeout": 200,
+            "knownbest": 7686
         },
         {
             "name": "G51",
-            "timeout": 10000
+            "timeout": 100,
+            "knownbest": 3848
         },
         {
             "name": "G58",
-            "timeout": 10000
+            "timeout": 500,
+            "knownbest": 19263
         },
         {
             "name": "G63",
-            "timeout": 10000
+            "timeout": 700,
+            "knownbest": 26997
         },
         {
             "name": "G18",
-            "timeout": 10000
+            "timeout": 80,
+            "knownbest": 992
         },
         {
             "name": "G39",
-            "timeout": 10000
+            "timeout": 200,
+            "knownbest": 2408
         },
         {
             "name": "G59",
-            "timeout": 10000
+            "timeout": 500,
+            "knownbest": 6078
         },
         {
             "name": "G64",
-            "timeout": 10000
+            "timeout": 700,
+            "knownbest": 8735
         },
         {
             "name": "G11",
-            "timeout": 10000
+            "timeout": 80,
+            "knownbest": 564
         },
         {
             "name": "G12",
-            "timeout": 10000
+            "timeout": 80,
+            "knownbest": 556
         },
         {
             "name": "G13",
-            "timeout": 10000
+            "timeout": 80,
+            "knownbest": 582
         },
         {
             "name": "G32",
-            "timeout": 10000
+            "timeout": 200,
+            "knownbest": 1410
         },
         {
             "name": "G33",
-            "timeout": 10000
+            "timeout": 200,
+            "knownbest": 1382
         },
         {
             "name": "G34",
-            "timeout": 10000
+            "timeout": 200,
+            "knownbest": 1384
         },
         {
             "name": "G57",
-            "timeout": 10000
+            "timeout": 500,
+            "knownbest": 3492
+        },
+        {
+            "name": "G62",
+            "timeout": 700,
+            "knownbest": 4868
         },
         {
             "name": "G65",
-            "timeout": 10000
+            "timeout": 800,
+            "knownbest": 5558
         },
         {
             "name": "G66",
-            "timeout": 10000
+            "timeout": 900,
+            "knownbest": 6360
         },
         {
             "name": "G67",
-            "timeout": 10000
+            "timeout": 1000,
+            "knownbest": 6940
         },
         {
             "name": "G72",
-            "timeout": 10000
+            "timeout": 1000,
+            "knownbest": 6998
         },
         {
             "name": "G77",
-            "timeout": 10000
+            "timeout": 1400,
+            "knownbest": 9926
         },
         {
             "name": "G81",
-            "timeout": 10000
+            "timeout": 2000,
+            "knownbest": 14030
         }
     ]
 }
