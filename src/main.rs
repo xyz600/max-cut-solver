@@ -12,6 +12,7 @@ use std::io::{BufWriter, Write};
 struct InstanceSettings {
     name: String,
     timeout: u64,
+    knownbest: u64,
 }
 
 #[derive(Debug, RustcDecodable)]
@@ -77,7 +78,11 @@ fn main() {
     let maybe_settings =
         json::decode::<ExperimentalSettings>(fs::read_to_string(config_path).unwrap().as_str());
 
-    let mut writer = TableWriter::new(vec!["timeout[ms]".to_string(), "score".to_string()]);
+    let mut writer = TableWriter::new(vec![
+        "timeout[ms]".to_string(),
+        "score".to_string(),
+        "known best".to_string(),
+    ]);
 
     match maybe_settings {
         Ok(settings) => {
@@ -98,9 +103,11 @@ fn main() {
                 let last_energy = calculate_energy(&graph, &best_solution);
                 println!("energy for check = {}", last_energy);
                 writer.append_row();
-                writer.table.last_mut().unwrap()[0] = instance.name.clone();
-                writer.table.last_mut().unwrap()[1] = instance.timeout.to_string();
-                writer.table.last_mut().unwrap()[2] = best_energy.to_string();
+                let last = writer.table.last_mut().unwrap();
+                last[0] = instance.name.clone();
+                last[1] = instance.timeout.to_string();
+                last[2] = best_energy.to_string();
+                last[3] = instance.knownbest.to_string();
             }
             writer.save("result.md");
         }
