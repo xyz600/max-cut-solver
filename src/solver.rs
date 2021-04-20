@@ -95,11 +95,12 @@ fn energy_diff_test() {
     }
 }
 
-fn randomize(graph: &Graph) -> Vec<i64> {
+fn randomize(graph: &Graph, rng: &mut ThreadRng) -> Vec<i64> {
     // initial solution
     let mut initial_solution = vec![0i64; graph.n];
+    let uniform = Uniform::from(0..1i64);
     for i in 0..graph.n {
-        initial_solution[i] = if i % 2 == 0 { 1 } else { -1 };
+        initial_solution[i] = uniform.sample(rng) * 2 - 1;
     }
     initial_solution
 }
@@ -114,7 +115,8 @@ fn accept(energy_diff: i64, progress: f64, rng: &mut ThreadRng) -> bool {
 }
 
 pub fn simulated_annealing(graph: &Graph, timeout: u64) -> (i64, Vec<i64>) {
-    let mut solution = randomize(&graph);
+    let mut rng = rand::thread_rng();
+    let mut solution = randomize(&graph, &mut rng);
     let start_time = Instant::now();
 
     let mut energy = calculate_energy(&graph, &solution);
@@ -126,7 +128,6 @@ pub fn simulated_annealing(graph: &Graph, timeout: u64) -> (i64, Vec<i64>) {
     let check_frequency = 8192;
     let mut progress = 0f64;
 
-    let mut rng = rand::thread_rng();
     let uniform_rand = Uniform::from(0..graph.n);
 
     loop {
@@ -290,6 +291,8 @@ pub fn dijkstra_like_flip(graph: &Graph, solution: &mut Vec<i64>, timeout: u64) 
     let mut best_local_energy_list = local_energy_list.clone();
     let mut energy = best_energy;
 
+    let mut iter = 0;
+
     loop {
         let selected = uniform.sample(&mut rng);
         let mut used = vec![false; graph.n];
@@ -338,12 +341,14 @@ pub fn dijkstra_like_flip(graph: &Graph, solution: &mut Vec<i64>, timeout: u64) 
         energy = best_energy;
         solution.copy_from_slice(&best_solution[0..]);
         local_energy_list.copy_from_slice(&best_local_energy_list[0..]);
+        iter += 1;
 
         let elapsed = start_time.elapsed().as_secs();
         if elapsed > timeout {
             break;
         }
     }
+    println!("iter = {}", iter);
 
     (best_energy, best_solution)
 }
@@ -351,33 +356,42 @@ pub fn dijkstra_like_flip(graph: &Graph, solution: &mut Vec<i64>, timeout: u64) 
 pub fn fast_swap_greedy(graph: &Graph, timeout: u64) -> (i64, Vec<i64>) {
     let start_time = Instant::now();
     let mut rng = rand::thread_rng();
-    let mut solution = randomize(&graph);
 
-    let mut energy = calculate_energy(&graph, &solution);
+    let mut best_solution = randomize(&graph, &mut rng);
+    let mut best_energy = calculate_energy(&graph, &best_solution);
 
-    loop {
-        let prev_energy = energy;
-        let mut candidate = IntSet::new(graph.n);
-
-        // local search
-        while let Some(v) = candidate.select(&mut rng) {
-            let energy_diff = calculate_energy_diff(&graph, &solution, v);
-            if energy_diff > 0 {
-                solution[v] *= -1;
-                for neighbor in &graph.edges[v] {
-                    candidate.push(neighbor.0);
+    for _iter in 0..graph.n.max(1000) {
+        let mut solution = randomize(&graph, &mut rng);
+        let mut energy = calculate_energy(&graph, &solution);
+        loop {
+            let prev_energy = energy;
+            let mut candidate = IntSet::new(graph.n);
+            // local search
+            while let Some(v) = candidate.select(&mut rng) {
+                let energy_diff = calculate_energy_diff(&graph, &solution, v);
+                if energy_diff > 0 {
+                    solution[v] *= -1;
+                    for neighbor in &graph.edges[v] {
+                        candidate.push(neighbor.0);
+                    }
+                    energy += energy_diff;
+                } else {
+                    candidate.erase(v);
                 }
-                energy += energy_diff;
-            } else {
-                candidate.erase(v);
+            }
+            if prev_energy == energy {
+                break;
             }
         }
-
         let end = start_time.elapsed().as_secs();
-        if end > timeout || prev_energy == energy {
+        if end > timeout {
             break;
+        }
+        if best_energy < energy {
+            best_solution.copy_from_slice(&solution[0..]);
+            best_energy = energy;
         }
     }
 
-    dijkstra_like_flip(&graph, &mut solution, timeout)
+    dijkstra_like_flip(&graph, &mut best_solution, timeout)
 }
